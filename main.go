@@ -10,10 +10,7 @@ import (
 type Weather struct {
 	Lat float64 `json:"latitude"`
 	Lng float64 `json:"longitude"`
-	// Location struct {
-	// 	Lat string `json:"latitude"`
-	// 	Lng string `json:"longitude"`
-	// } `json:"location"`
+
 	Current struct {
 		Time       string  `json:"time"`
 		Temperture float64 `json:"temperature_2m"`
@@ -49,5 +46,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(weather)
+	coordinates := fmt.Sprintf("위도: %f, 경도: %f", weather.Lat, weather.Lng)
+
+	time, temp := weather.Current.Time, weather.Current.Temperture
+
+	fmt.Printf("location: %s, time: %s, temp: %f", coordinates, time, temp)
 }
