@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type Weather struct {
@@ -19,12 +21,16 @@ type Weather struct {
 
 // https://open-meteo.com/ from free api for non commercial use only
 func main() {
-	url := "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m"
-	// 서울 은평구 경도 위도
-	// latitude := "126.9312417"
-	// longitude := "37.59996944"
 
-	// url := fmt.Sprintf("https://api.open-meteo.com/v1/forecast?latitude=126.9312417&longitude=37.59996944&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m")
+	r := mux.NewRouter()
+	r.HandleFunc("/weather", Weathers)
+
+	http.ListenAndServe(":8080", r)
+}
+
+func Weathers(w http.ResponseWriter, r *http.Request) {
+	url := "https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=temperature_2m,wind_speed_10m&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m"
+
 	res, err := http.Get(url)
 	if err != nil {
 		panic(err)
@@ -40,8 +46,8 @@ func main() {
 		panic(err)
 	}
 	// fmt.Println(string(body))
+	var weather Weather // 포인터로 선언
 
-	var weather Weather
 	err = json.Unmarshal(body, &weather)
 	if err != nil {
 		panic(err)
@@ -50,5 +56,8 @@ func main() {
 
 	time, temp := weather.Current.Time, weather.Current.Temperture
 
-	fmt.Printf("location: %s, time: %s, temp: %f", coordinates, time, temp)
+	message := fmt.Sprintf("location: %s, time: %s, temp: %f", coordinates, time, temp)
+
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprint(w, message)
 }
